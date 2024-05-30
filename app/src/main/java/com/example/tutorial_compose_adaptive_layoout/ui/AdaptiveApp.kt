@@ -11,12 +11,17 @@ import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.AnimatedPane
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
+import androidx.compose.material3.adaptive.layout.ThreePaneScaffoldRole
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -39,13 +44,22 @@ fun AdaptiveApp() {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
-
     val adaptiveInfo = currentWindowAdaptiveInfo()
+
+    //optional to hide detail for compact and medium width size
+    var hideNavigation by remember(key1 = adaptiveInfo.windowSizeClass) {
+        mutableStateOf(false)
+    }
+
     val customNavSuiteType = with(adaptiveInfo) {
-        if (windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED) {
-            NavigationSuiteType.NavigationDrawer
+        if (!hideNavigation) {
+            if (windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED) {
+                NavigationSuiteType.NavigationDrawer
+            } else {
+                NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(adaptiveInfo)
+            }
         } else {
-            NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(adaptiveInfo)
+            NavigationSuiteType.None
         }
     }
 
@@ -55,8 +69,8 @@ fun AdaptiveApp() {
             navigationItemList.forEach { item ->
                 item(
                     icon = { Icon(imageVector = item.icon, contentDescription = item.text) },
-                    label = { Text(text = item.text)},
-                    selected = currentDestination?.hierarchy?.any { it.route ==  item.text} == true,
+                    label = { Text(text = item.text) },
+                    selected = currentDestination?.hierarchy?.any { it.route == item.text } == true,
                     onClick = {
                         navController.navigate(item.text) {
                             popUpTo(navController.graph.findStartDestination().id) {
@@ -67,25 +81,46 @@ fun AdaptiveApp() {
 
                             restoreState = true
                         }
+
                     }
                 )
             }
+
         }) {
         Scaffold { paddingValues ->
             NavHost(
-                navController = navController, startDestination = navigationItemList[0].text) {
+                navController = navController, startDestination = navigationItemList[0].text
+            ) {
                 composable(route = navigationItemList[0].text) {
+
                     val navigator = rememberListDetailPaneScaffoldNavigator<Quote>()
+
+                    LaunchedEffect(
+                        key1 = adaptiveInfo.windowSizeClass,
+                        key2 = navigator.currentDestination?.pane
+                    ) {
+                        if (
+                            adaptiveInfo.windowSizeClass.windowWidthSizeClass != WindowWidthSizeClass.EXPANDED &&
+                            navigator.currentDestination?.pane == ThreePaneScaffoldRole.Primary
+                        ) {
+                            println("hide navigation")
+                            hideNavigation = true
+                        } else {
+                            hideNavigation = false
+                        }
+                    }
 
                     BackHandler(navigator.canNavigateBack()) {
                         navigator.navigateBack()
                     }
 
-                    ListDetailPaneScaffold(directive = navigator.scaffoldDirective, value = navigator.scaffoldValue,
+                    ListDetailPaneScaffold(directive = navigator.scaffoldDirective,
+                        value = navigator.scaffoldValue,
                         listPane = {
                             ListScreen(
                                 paddingValues = paddingValues,
-                                items = LocalQuotesProvider.allQuotes) { quote ->
+                                items = LocalQuotesProvider.allQuotes
+                            ) { quote ->
                                 navigator.navigateTo(ListDetailPaneScaffoldRole.Detail, quote)
                             }
                         },
