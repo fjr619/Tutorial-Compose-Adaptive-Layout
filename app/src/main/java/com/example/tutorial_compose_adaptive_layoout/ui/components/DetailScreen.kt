@@ -1,6 +1,6 @@
 package com.example.tutorial_compose_adaptive_layoout.ui.components
 
-import android.annotation.SuppressLint
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -25,9 +26,9 @@ import com.example.tutorial_compose_adaptive_layoout.data.Quote
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
-    quote: Quote,
+    quote: Quote?,
     modifier: Modifier = Modifier,
-    onBackClick : () -> Unit,
+    onBackClick: () -> Unit,
 ) {
 
     val adaptiveInfo = currentWindowAdaptiveInfo()
@@ -36,6 +37,7 @@ fun DetailScreen(
     }
 
     Scaffold(
+        modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(title = {
                 Text(text = "DETAIL")
@@ -43,18 +45,34 @@ fun DetailScreen(
                 navigationIcon = {
                     if (showAction) {
                         IconButton(onClick = { onBackClick() }) {
-                            Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = "")
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                                contentDescription = ""
+                            )
                         }
                     }
-                })
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.onPrimary
+                )
+            )
         }
-    ) {  paddingValues ->
-        Box(modifier = modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
-            Column {
-                Text(text = quote.quote, style = MaterialTheme.typography.displaySmall)
-                Text(text = quote.author, style = MaterialTheme.typography.bodyMedium)
+    ) { paddingValues ->
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(MaterialTheme.colorScheme.primaryContainer),
+            contentAlignment = Alignment.Center
+        ) {
+            quote?.let {
+                Column {
+                    Text(text = it.quote, style = MaterialTheme.typography.displaySmall)
+                    Text(text = it.author, style = MaterialTheme.typography.bodyMedium)
+                }
+            } ?: run {
+                Text(text = "EMPTY DATA")
             }
         }
     }
-
 }

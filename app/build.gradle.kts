@@ -41,7 +41,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.12"
+        kotlinCompilerExtensionVersion = "1.5.13"
     }
     packaging {
         resources {
@@ -67,9 +67,9 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    implementation ("androidx.navigation:navigation-compose:2.7.7")
-    implementation ("androidx.compose.material3.adaptive:adaptive:1.0.0-beta01")
-    implementation ("androidx.compose.material3.adaptive:adaptive-layout:1.0.0-beta01")
-    implementation ("androidx.compose.material3.adaptive:adaptive-navigation:1.0.0-beta01")
-    implementation("androidx.compose.material3:material3-adaptive-navigation-suite:1.3.0-beta01")
+    implementation (libs.androidx.navigation.compose)
+    implementation (libs.androidx.adaptive)
+    implementation (libs.androidx.adaptive.layout)
+    implementation (libs.androidx.adaptive.navigation)
+    implementation(libs.androidx.material3.adaptive.navigation.suite)
 }

@@ -8,6 +8,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.layout.AnimatedPane
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
@@ -89,14 +90,10 @@ fun AdaptiveApp() {
                             }
                         },
                         detailPane = {
-                            navigator.currentDestination?.content?.let { quote ->
+                            val quote = navigator.currentDestination?.content as Quote?
+                            AnimatedPane {
                                 DetailScreen(quote = quote) {
                                     navigator.navigateBack()
-                                }
-                            } ?: run {
-                                Box(modifier = Modifier
-                                    .fillMaxSize(), contentAlignment = Alignment.Center) {
-                                    Text(text = "EMPTY DATA")
                                 }
                             }
                         })
